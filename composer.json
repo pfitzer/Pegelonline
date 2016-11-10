@@ -1,0 +1,31 @@
+{
+  "name": "pfitzer/pegelonline",
+  "type": "library",
+  "license": "MIT",
+  "description": "Library to use REST data from www.pegelonline.wsv.de",
+  "keywords": [
+    "rest",
+    "api"
+  ],
+  "authors": [
+    {
+      "name": "Michael Pfister",
+      "email": "michael@mp-development.de"
+    }
+  ],
+  "require": {
+    "php": ">=5.6.0",
+    "ext-curl": "*",
+    "othercode/rest": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pfitzer\\Pegelonline\\": "src/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4.1.0",
+    "php-mock/php-mock-phpunit": "^1.1",
+    "phpmd/phpmd" : "@stable"
+  }
+}
