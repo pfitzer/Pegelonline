@@ -20,7 +20,8 @@ namespace Pfitzer\Pegelonline;
 
 use OtherCode\Rest;
 
-class Pegelonline {
+class Pegelonline
+{
 
     /**
      * @var string
@@ -40,7 +41,8 @@ class Pegelonline {
     /**
      * @param Rest\Rest $rest
      */
-    public function __construct(Rest\Rest $rest=null) {
+    public function __construct(Rest\Rest $rest = null)
+    {
         if ($rest === null) {
             $rest = new Rest\Rest();
         }
@@ -52,7 +54,69 @@ class Pegelonline {
      *
      * @return string
      */
-    public function getApiUrl() {
+    public function getApiUrl()
+    {
         return sprintf($this->apiUrl . '%s/', $this->apiVersion);
+    }
+
+    /**
+     * @param bool $timeSeries
+     * @param bool $currentMeasurement
+     * @param bool $characteristicValues
+     * @return mixed
+     */
+    public function getStations($timeSeries = false, $currentMeasurement = false, $characteristicValues = false)
+    {
+        $uriString = $this->getApiUrl()
+            . 'stations.json?includeTimeseries=%s&includeCurrentMeasurement=%s&includeCharacteristicValues=%s';
+        $url = sprintf(
+            $uriString,
+            $this->toString($timeSeries),
+            $this->toString($currentMeasurement),
+            $this->toString($characteristicValues)
+        );
+
+        return $this->get($url);
+    }
+
+    /**
+     * @param $name der name der Station
+     * @return mixed
+     */
+    public function getStationByName($name) {
+        $url = sprintf($this->getApiUrl() . '/stations/' . mb_strtoupper($name) . '.json');
+
+        return $this->get($url);
+    }
+
+    /**
+     * @param $url
+     * @param null $body
+     * @return mixed
+     */
+    private function get($url, $body = null)
+    {
+
+        $val = $this->rest->get(urlencode($url), $body);
+
+        switch ($val->code) {
+            case 200:
+            case 201:
+                return json_decode($val->body);
+                break;
+        }
+    }
+
+    /**
+     * @param bool $arg
+     * @return string
+     */
+    private function toString($arg)
+    {
+        if ($arg) {
+            return 'true';
+        }
+
+        return 'false';
     }
 }
