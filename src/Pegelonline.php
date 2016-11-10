@@ -76,7 +76,7 @@ class Pegelonline
             $this->toString($characteristicValues)
         );
 
-        return $this->get($url);
+        return $this->getApiCall($url);
     }
 
     /**
@@ -86,7 +86,7 @@ class Pegelonline
     public function getStationByName($name) {
         $url = sprintf($this->getApiUrl() . '/stations/' . mb_strtoupper($name) . '.json');
 
-        return $this->get($url);
+        return $this->getApiCall($url);
     }
 
     /**
@@ -94,7 +94,7 @@ class Pegelonline
      * @param null $body
      * @return mixed
      */
-    private function get($url, $body = null)
+    private function getApiCall($url, $body = null)
     {
 
         $val = $this->rest->get(urlencode($url), $body);
