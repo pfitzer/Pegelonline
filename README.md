@@ -18,7 +18,7 @@ $pgOnline = new Pegelonline();
 
 # get all waters with stations
 try {
-    $result = $pgonline->getWaters(true);
+    $result = $pgOnline->getWaters(true);
 } catch (\InvalidArgumentException $e) {
     # do something
 }
