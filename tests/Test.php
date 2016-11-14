@@ -131,23 +131,49 @@ class PegelonlineTest extends PHPUnit_Framework_TestCase
 
     public function testGetMeasurement()
     {
-        $ret = new \stdClass();
-        $ret->code = 200;
-        $ret->body = '{
-            "timestamp": "2016-10-23T10:00:00+02:00",
-            "value": 172.0
-        }';
-
         $this->restMock->expects($this->once())
             ->method('get')
             ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/BONN/W/measurements.json')
-            ->willReturn($ret);
+            ->willReturn($this->getReturn());
 
         $pgOnline = new Pegelonline\Pegelonline($this->restMock);
         $pgOnline->getMeasurementsForStation('bonn');
     }
 
     public function testGetMeasurementWithTimestamps()
+    {
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/BONN/W/measurements.json?start=2016-10-20T10:00:00+02:00&end=2016-10-23T10:00:00+02:00')
+            ->willReturn($this->getReturn());
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $pgOnline->getMeasurementsForStation('bonn', "2016-10-20T10:00:00+02:00", "2016-10-23T10:00:00+02:00");
+    }
+
+    public function testGetWaters()
+    {
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/waters.json?includeStations=false')
+            ->willReturn($this->getReturn());
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $pgOnline->getWaters();
+    }
+
+    public function testGetWatersWithStations()
+    {
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/waters.json?includeStations=true')
+            ->willReturn($this->getReturn());
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $pgOnline->getWaters(true);
+    }
+
+    private function getReturn()
     {
         $ret = new \stdClass();
         $ret->code = 200;
@@ -156,12 +182,6 @@ class PegelonlineTest extends PHPUnit_Framework_TestCase
             "value": 172.0
         }';
 
-        $this->restMock->expects($this->once())
-            ->method('get')
-            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/BONN/W/measurements.json?start=2016-10-20T10:00:00+02:00&end=2016-10-23T10:00:00+02:00')
-            ->willReturn($ret);
-
-        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
-        $pgOnline->getMeasurementsForStation('bonn', "2016-10-20T10:00:00+02:00", "2016-10-23T10:00:00+02:00");
+        return $ret;
     }
 }

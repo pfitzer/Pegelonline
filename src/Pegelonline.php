@@ -19,7 +19,6 @@
 namespace Pfitzer\Pegelonline;
 
 use OtherCode\Rest;
-use HttpRequestException;
 
 class Pegelonline
 {
@@ -95,8 +94,8 @@ class Pegelonline
      * if no start and end date given, it will return data of the last 10 days
      *
      * @param $station
-     * @param string $from timestamp, e.g. 2016-10-23T11:30:00+02:00
-     * @param string $to timestamp, e.g. 2016-10-23T11:30:00+02:00
+     * @param string $from timestamp, ISO_8601
+     * @param string $to timestamp, ISO_8601
      * @return mixed
      * @throws \Exception
      */
@@ -115,9 +114,22 @@ class Pegelonline
     }
 
     /**
+     * @param bool $includeStations
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getWaters($includeStations=false)
+    {
+        $url = $this->getApiUrl() . sprintf('waters.json?includeStations=%s', $this->toString($includeStations));
+
+        return $this->getApiCall($url);
+    }
+
+    /**
      * @param $url
      * @param null $body
      * @return mixed
+     * @throws \Exception
      */
     protected function getApiCall($url, $body = null)
     {
@@ -125,9 +137,6 @@ class Pegelonline
         $val = $this->rest->get($url, $body);
 
         switch ($val->code) {
-            case 0:
-                throw new \Exception($val->error->message);
-                break;
             case 400:
             case 404:
                 $ret = json_decode($val->body);
@@ -136,6 +145,10 @@ class Pegelonline
             case 200:
             case 201:
                 return json_decode($val->body);
+                break;
+            default:
+            case 0:
+                throw new \Exception($val->error->message);
                 break;
         }
     }
