@@ -19,6 +19,7 @@
 namespace Pfitzer\Pegelonline;
 
 use OtherCode\Rest;
+use HttpRequestException;
 
 class Pegelonline
 {
@@ -80,11 +81,35 @@ class Pegelonline
     }
 
     /**
-     * @param $name der name der Station
+     * @param $station name of the station
      * @return mixed
      */
-    public function getStationByName($name) {
-        $url = sprintf($this->getApiUrl() . '/stations/' . mb_strtoupper($name) . '.json');
+    public function getStationByName($station) {
+        $url = sprintf($this->getApiUrl() . 'stations/' . mb_strtoupper($station) . '.json');
+
+        return $this->getApiCall($url);
+    }
+
+    /**
+     * get measurements for a single station
+     * if no start and end date given, it will return data of the last 10 days
+     *
+     * @param $station
+     * @param string $from timestamp, e.g. 2016-10-23T11:30:00+02:00
+     * @param string $to timestamp, e.g. 2016-10-23T11:30:00+02:00
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getMeasurementsForStation($station, $from=false, $to=false)
+    {
+        $url = sprintf(
+            $this->getApiUrl() . 'stations/%s/W/measurements.json',
+            mb_strtoupper($station)
+        );
+
+        if(is_string($from) && is_string($to)) {
+            $url = $url . sprintf('?start=%s&end=%s', $from, $to);
+        }
 
         return $this->getApiCall($url);
     }
@@ -94,12 +119,20 @@ class Pegelonline
      * @param null $body
      * @return mixed
      */
-    private function getApiCall($url, $body = null)
+    protected function getApiCall($url, $body = null)
     {
 
-        $val = $this->rest->get(urlencode($url), $body);
+        $val = $this->rest->get($url, $body);
 
         switch ($val->code) {
+            case 0:
+                throw new \Exception($val->error->message);
+                break;
+            case 400:
+            case 404:
+                $ret = json_decode($val->body);
+                throw new \InvalidArgumentException($ret->message);
+                break;
             case 200:
             case 201:
                 return json_decode($val->body);
@@ -111,7 +144,7 @@ class Pegelonline
      * @param bool $arg
      * @return string
      */
-    private function toString($arg)
+    protected function toString($arg)
     {
         if ($arg) {
             return 'true';

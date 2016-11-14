@@ -61,7 +61,7 @@ class PegelonlineTest extends PHPUnit_Framework_TestCase
 
         $this->restMock->expects($this->once())
             ->method('get')
-            ->with('https%3A%2F%2Fwww.pegelonline.wsv.de%2Fwebservices%2Frest-api%2Fv2%2Fstations.json%3FincludeTimeseries%3Dfalse%26includeCurrentMeasurement%3Dfalse%26includeCharacteristicValues%3Dfalse')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeTimeseries=false&includeCurrentMeasurement=false&includeCharacteristicValues=false')
             ->willReturn($ret);
 
         $pgOnline = new Pegelonline\Pegelonline($this->restMock);
@@ -84,11 +84,84 @@ class PegelonlineTest extends PHPUnit_Framework_TestCase
 
         $this->restMock->expects($this->once())
             ->method('get')
-            ->with('https%3A%2F%2Fwww.pegelonline.wsv.de%2Fwebservices%2Frest-api%2Fv2%2F%2Fstations%2FBONN.json')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/BONN.json')
             ->willReturn($ret);
 
         $pgOnline = new Pegelonline\Pegelonline($this->restMock);
         $station = $pgOnline->getStationByName('bonn');
         $this->assertEquals($station, $expected);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Nothing found for given parameters.
+     */
+    public function test404Exception()
+    {
+        $ret = new \stdClass();
+        $ret->code = 404;
+        $ret->body = '{"message": "Nothing found for given parameters."}';
+
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->willReturn($ret);
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $station = $pgOnline->getStationByName('xyz');
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage foo
+     */
+    public function test0Exception()
+    {
+        $ret = new \stdClass();
+        $ret->code = 0;
+        $ret->error = new \stdClass();
+        $ret->error->message = 'foo';
+
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->willReturn($ret);
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $station = $pgOnline->getStationByName('xyz');
+    }
+
+    public function testGetMeasurement()
+    {
+        $ret = new \stdClass();
+        $ret->code = 200;
+        $ret->body = '{
+            "timestamp": "2016-10-23T10:00:00+02:00",
+            "value": 172.0
+        }';
+
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/BONN/W/measurements.json')
+            ->willReturn($ret);
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $pgOnline->getMeasurementsForStation('bonn');
+    }
+
+    public function testGetMeasurementWithTimestamps()
+    {
+        $ret = new \stdClass();
+        $ret->code = 200;
+        $ret->body = '{
+            "timestamp": "2016-10-23T10:00:00+02:00",
+            "value": 172.0
+        }';
+
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/BONN/W/measurements.json?start=2016-10-20T10:00:00+02:00&end=2016-10-23T10:00:00+02:00')
+            ->willReturn($ret);
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $pgOnline->getMeasurementsForStation('bonn', "2016-10-20T10:00:00+02:00", "2016-10-23T10:00:00+02:00");
     }
 }
