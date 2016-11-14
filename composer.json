@@ -5,7 +5,9 @@
   "description": "Library to use REST data from www.pegelonline.wsv.de",
   "keywords": [
     "rest",
-    "api"
+    "api",
+    "Pegelonline",
+    "WSV"
   ],
   "authors": [
     {
