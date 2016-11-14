@@ -28,6 +28,8 @@ contribute
 ----------
 feel free to do so
 
+git clone https://github.com/pfitzer/Pegelonline
+
 #### install dev dependencies
 ```
 composer install
