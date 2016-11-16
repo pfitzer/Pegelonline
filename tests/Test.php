@@ -1,20 +1,5 @@
 <?php
-/**
- * @author Michael Pfister <michael@mp-development.de>
- * @copyright (c) 2016, Michael Pfister
- * @license MIT
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
- * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
- * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
- * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * https://opensource.org/licenses/MIT
- */
+
 namespace Pfitzer\Pegelonline;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -23,6 +8,14 @@ use PHPUnit_Framework_TestCase;
 use Pfitzer\Pegelonline;
 use OtherCode\Rest;
 
+/**
+ * Class PegelonlineTest
+ *
+ * @author Michael Pfister <michael@mp-development.de>
+ * @copyright (c) 2016, Michael Pfister
+ * @license MIT
+ * @package Pfitzer\Pegelonline
+ */
 class PegelonlineTest extends PHPUnit_Framework_TestCase
 {
 
@@ -171,6 +164,17 @@ class PegelonlineTest extends PHPUnit_Framework_TestCase
 
         $pgOnline = new Pegelonline\Pegelonline($this->restMock);
         $pgOnline->getWaters(true);
+    }
+
+    public function testGetTimelineForStation()
+    {
+        $this->restMock->expects($this->once())
+            ->method('get')
+            ->with('https://www.pegelonline.wsv.de/webservices/rest-api/v2//stations/XYZ/W.json?includeCurrentMeasurement=true')
+            ->willReturn($this->getReturn());
+
+        $pgOnline = new Pegelonline\Pegelonline($this->restMock);
+        $pgOnline->getTimelineForStation('xyz');
     }
 
     private function getReturn()
